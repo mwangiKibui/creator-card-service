@@ -96,6 +96,13 @@ async function createCard(serviceData, options = {}) {
     const clientProvidedSlug = !!slug;
 
     if (clientProvidedSlug) {
+      if (!/^[a-zA-Z0-9\-_]+$/.test(slug)) {
+        throwAppError(
+          'Slug may only contain letters, numbers, hyphens, and underscores',
+          ERROR_CODE.INVLDDATA
+        );
+      }
+
       const existing = await CreatorCardRepository.findOne({ query: { slug, deleted: null } });
       if (existing) {
         throwAppError(CreatorCardMessages.SLUG_ALREADY_TAKEN, ERROR_CODE.INVLDDATA, {
