@@ -1,3 +1,4 @@
+const { timingSafeEqual } = require('crypto');
 const validator = require('@app-core/validator');
 const { throwAppError, ERROR_CODE } = require('@app-core/errors');
 const { appLogger } = require('@app-core/logger');
@@ -6,10 +7,15 @@ const CreatorCardRepository = require('@app/repository/creator-card');
 
 const getCardSpec = `root {
   slug string<trim|lengthBetween:5,50>
-  access_code? string
+  access_code? string<trim|length:6>
 }`;
 
 const parsedGetCardSpec = validator.parse(getCardSpec);
+
+function accessCodeMatches(supplied, stored) {
+  if (!stored || supplied.length !== stored.length) return false;
+  return timingSafeEqual(Buffer.from(supplied), Buffer.from(stored));
+}
 
 function serializeCard(doc) {
   const card = { ...doc };
@@ -49,7 +55,7 @@ async function getCard(serviceData, options = {}) {
       });
     }
 
-    if (card.access_type === 'private' && accessCode !== card.access_code) {
+    if (card.access_type === 'private' && !accessCodeMatches(accessCode, card.access_code)) {
       throwAppError(CreatorCardMessages.INVALID_ACCESS_CODE, ERROR_CODE.INVLDREQ, { code: 'AC04' });
     }
 

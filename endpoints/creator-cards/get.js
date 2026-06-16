@@ -8,12 +8,23 @@ module.exports = createHandler({
   method: 'get',
   middlewares: [],
   async onResponseEnd(rc, rs) {
-    appLogger.info({ requestContext: rc, response: rs }, 'get-creator-card-request-completed');
+    const sanitizedContext = {
+      ...rc,
+      query: { ...rc.query, access_code: rc.query.access_code ? '[REDACTED]' : undefined },
+      properties: {
+        ...rc.properties,
+        requestURL: rc.properties.requestURLWithoutQueryStrings,
+      },
+    };
+    appLogger.info(
+      { requestContext: sanitizedContext, response: rs },
+      'get-creator-card-request-completed'
+    );
   },
   async handler(rc, helpers) {
     const payload = {
-      ...rc.params,
       ...rc.query,
+      ...rc.params,
     };
 
     const result = await getCardService(payload);
