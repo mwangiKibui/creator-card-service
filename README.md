@@ -29,7 +29,7 @@ Ensure the following are installed and available before running the service loca
 
 ## Running the API
 
-**Dev base URL:** `<!-- TODO: add dev base URL here -->`
+**Dev base URL:** `https://creator-card-service-h2iz.onrender.com`
 
 ### Run locally
 
