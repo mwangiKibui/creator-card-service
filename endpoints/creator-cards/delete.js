@@ -12,8 +12,8 @@ module.exports = createHandler({
   },
   async handler(rc, helpers) {
     const payload = {
-      ...rc.params,
-      ...rc.body,
+      slug: rc.params.slug,
+      creator_reference: rc.body.creator_reference,
     };
 
     const result = await deleteCardService(payload);

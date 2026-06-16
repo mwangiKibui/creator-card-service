@@ -25,9 +25,11 @@ async function deleteCard(serviceData, options = {}) {
   const data = validator.validate(serviceData, parsedDeleteCardSpec);
 
   try {
-    const { slug } = data;
+    const { slug, creator_reference: creatorReference } = data;
 
-    const card = await CreatorCardRepository.findOne({ query: { slug, deleted: null } });
+    const card = await CreatorCardRepository.findOne({
+      query: { slug, creator_reference: creatorReference, deleted: null },
+    });
 
     if (!card) {
       throwAppError(CreatorCardMessages.CARD_NOT_FOUND, ERROR_CODE.NOTFOUND, { code: 'NF01' });
@@ -35,10 +37,14 @@ async function deleteCard(serviceData, options = {}) {
 
     const deletedAt = Date.now();
 
-    await CreatorCardRepository.updateOne({
-      query: { slug },
+    const updateResult = await CreatorCardRepository.updateOne({
+      query: { slug, creator_reference: creatorReference, deleted: null },
       updateValues: { deleted: deletedAt },
     });
+
+    if (!updateResult.modifiedCount) {
+      throwAppError(CreatorCardMessages.CARD_NOT_FOUND, ERROR_CODE.NOTFOUND, { code: 'NF01' });
+    }
 
     const plain = card.toObject ? card.toObject() : { ...card };
     plain.deleted = deletedAt;
